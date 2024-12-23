@@ -1,0 +1,89 @@
+<!-- manage_users.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление Пользователями</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+</head>
+<body th:data-role="${userRole}" th:data-is-logged-in="${isLoggedIn}">
+<div th:if="${isLoggedIn} and ${userRole == 'ADMIN'}">
+    <div th:replace="~{navbar :: navbar}"></div>
+    <div class="container mt-4">
+        <h1 class="mb-4">Управление Пользователями</h1>
+        <table id="manageUsersTable" class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя Пользователя</th>
+                <th>Роли</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody id="manageUsersTableBody">
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.username}"></td>
+                <td>
+                            <span th:each="role, iterStat : ${user.roles}">
+                                <span th:text="${role.name}"></span><span th:if="${!iterStat.last}">, </span>
+                            </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-warning editUserButton" th:if="${userRole == 'ADMIN' or userRole == 'EDITOR'}" th:data-id="${user.id}" th:data-username="${user.username}" th:attr="data-roles='${user.roles.?[name != null].name}'" data-bs-toggle="modal" data-bs-target="#editUserModal">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </button>
+                    <button class="btn btn-sm btn-danger deleteUserButton" th:if="${userRole == 'ADMIN' or userRole == 'EDITOR'}" th:data-id="${user.id}">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div th:unless="${isLoggedIn}">
+    <h2>Нет доступа. Пожалуйста, войдите в систему.</h2>
+    <a th:href="@{/login}" class="btn btn-primary">Вход</a>
+</div>
+    <!-- Модальное окно редактирования пользователя -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editUserForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editUserModalLabel">Редактировать Пользователя</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editUserId" name="id">
+                        <div class="mb-3">
+                            <label for="editUsername" class="form-label">Имя Пользователя</label>
+                            <input type="text" class="form-control" id="editUsername" name="username" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Роль</label>
+                            <div id="editUserRoles"></div>
+                        </div>
+                        <div id="editUserError" class="text-danger" style="display: none;">
+                            Ошибка при редактировании пользователя.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить Изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрипты -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/user_admin.js"></script>
+<script src="/js/scripts.js"></script>
+</body>
+</html>

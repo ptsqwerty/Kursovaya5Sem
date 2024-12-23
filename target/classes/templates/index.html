@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Список мероприятий</title>
+    <link rel="stylesheet" th:href="@{https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+</head>
+<body th:data-role="${userRole}" th:data-is-logged-in="${isLoggedIn}">
+<div th:replace="~{navbar :: navbar}"></div>
+<div class="container mt-4">
+    <h1 class="mb-4">Список мероприятий</h1>
+    <div class="d-flex justify-content-between mb-3">
+        <button id="openModalButton" class="btn btn-primary"
+                th:if="${(userRole == 'EDITOR' or userRole == 'ADMIN') and isLoggedIn}"
+                data-bs-toggle="modal" data-bs-target="#addEventModal">Добавить новое мероприятие</button>
+        <form th:action="@{/events/search}" method="get" class="d-flex">
+            <input class="form-control me-2" type="text" name="keyword" placeholder="Поиск по названию">
+            <button class="btn btn-outline-success" type="submit">Искать</button>
+        </form>
+    </div>
+    <div class="mb-3">
+        <a th:href="@{/events/sortByDate}" class="btn btn-secondary">Сортировать по дате</a>
+    </div>
+    <p>Всего мероприятий: <span id="eventCount"></span></p>
+    <table id="eventTable" class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Локация</th>
+            <th>Дата</th>
+            <th>Количество гостей</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="event : ${listEvents}">
+            <td th:text="${event.id}"></td>
+            <td th:text="${event.name}"></td>
+            <td th:text="${event.location}"></td>
+            <td th:text="${event.date}"></td>
+            <td th:text="${event.peopleAmmount}"></td>
+            <td>
+                <a href="#" class="btn btn-sm btn-warning editEventButton"
+                   th:if="${(userRole == 'ADMIN' or userRole == 'EDITOR') and isLoggedIn}"
+                   th:data-id="${event.id}"
+                   th:data-name="${event.name}"
+                   th:data-location="${event.location}"
+                   th:data-date="${event.date}"
+                   th:data-people-ammount="${event.peopleAmmount}">
+                    <i class="fas fa-edit"></i> Редактировать
+                </a>
+                <a th:if="${(userRole == 'ADMIN' or userRole == 'EDITOR') and isLoggedIn}"
+                   th:href="@{'/events/deleteEvent/' + ${event.id}}"
+                   class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash-alt"></i> Удалить
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2 class="mt-5">Гистограмма количества мероприятий по дням</h2>
+    <canvas id="eventChart" width="400" height="200"></canvas>
+
+    <h2 class="mt-5">Подсчёт количества мероприятий за один день</h2>
+    <div class="d-flex align-items-center mb-3">
+        <input type="date" id="dateInput" class="form-control me-2" style="max-width: 200px;">
+        <button id="countByDateButton" class="btn btn-primary">Показать количество</button>
+    </div>
+    <p id="eventCountByDate"></p>
+</div>
+
+<!-- Модальное окно добавления мероприятия -->
+<div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEventForm" method="post" th:action="@{/events/add}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEventModalLabel">Добавить новое мероприятие</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="addName" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="addName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addLocation" class="form-label">Локация</label>
+                        <textarea class="form-control" id="addLocation" name="location" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addDate" class="form-label">Дата</label>
+                        <input type="date" class="form-control" id="addDate" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addPeopleAmmount" class="form-label">Количество гостей</label>
+                        <input type="number" class="form-control" id="addPeopleAmmount" name="peopleAmmount" min="1" required>
+                    </div>
+                    <div id="addEventError" class="text-danger" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/scripts.js"></script>
+
+<script>
+    // Получаем данные для графика (предположим, что они передаются как атрибуты модели)
+    const eventCountsByDate = /*[[${eventCountsByDate}]]*/ [];
+
+    // Пример структуры данных для графика: даты и количества
+    // Пример: {"2024-12-01": 5, "2024-12-02": 3}
+    const labels = Object.keys(eventCountsByDate);
+    const data = Object.values(eventCountsByDate);
+
+    // Получаем контекст для canvas
+    const ctx = document.getElementById('eventChart').getContext('2d');
+
+    // Создаем график
+    const eventChart = new Chart(ctx, {
+        type: 'bar', // Тип графика
+        data: {
+            labels: labels, // Даты
+            datasets: [{
+                label: 'Количество мероприятий',
+                data: data, // Количество мероприятий на каждый день
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

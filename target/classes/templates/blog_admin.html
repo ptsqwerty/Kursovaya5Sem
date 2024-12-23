@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ панель блога</title>
+    <link rel="stylesheet" th:href="@{https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css}">
+</head>
+<body th:data-role="${userRole}" th:data-is-logged-in="${isLoggedIn}">
+
+<div th:if="${isLoggedIn} and ${userRole != 'VIEWER'}">
+    <div th:replace="~{navbar :: navbar}"></div>
+    <div class="container mt-4">
+        <h1>Административная панель блога</h1>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addPostModal">Добавить запись</button>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Дата</th>
+                <th>Автор</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="post : ${posts}">
+                <td th:text="${post.id}"></td>
+                <td th:text="${post.title}"></td>
+                <td th:text="${post.publicationDate}"></td>
+                <td th:text="${post.author.username}"></td>
+                <td>
+                    <button class="btn btn-sm btn-warning editPostButton" th:data-id="${post.id}" th:data-title="${post.title}" th:data-content="${post.content}" data-bs-toggle="modal" data-bs-target="#editPostModal">Редактировать</button>
+                    <button class="btn btn-sm btn-danger deletePostButton" th:data-id="${post.id}">Удалить</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div th:unless="${isLoggedIn} and ${userRole != 'VIEWER'}">
+    <h2>Нет доступа. Пожалуйста, войдите в систему.</h2>
+    <a th:href="@{/login}" class="btn btn-primary">Вход</a>
+</div>
+
+<!-- Модальное окно добавления записи -->
+<div class="modal fade" id="addPostModal" tabindex="-1" aria-labelledby="addPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addPostForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPostModalLabel">Добавить запись</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Поля формы добавления записи -->
+                    <div class="mb-3">
+                        <label for="addTitle" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="addTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addContent" class="form-label">Текст записи</label>
+                        <textarea class="form-control" id="addContent" name="content" required></textarea>
+                    </div>
+                    <div id="addPostError" class="text-danger" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования записи -->
+<div class="modal fade" id="editPostModal" tabindex="-1" aria-labelledby="editPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editPostForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPostModalLabel">Редактировать запись</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Поля формы редактирования записи -->
+                    <input type="hidden" id="editPostId" name="id">
+                    <div class="mb-3">
+                        <label for="editTitle" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="editTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editContent" class="form-label">Текст записи</label>
+                        <textarea class="form-control" id="editContent" name="content" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDate" class="form-label">Дата публикации</label>
+                        <input type="date" class="form-control" id="editDate" name="publicationDate" required>
+                    </div>
+                    <div id="editPostError" class="text-danger" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Подключение скриптов -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/blog_admin.js"></script>
+</body>
+</html>

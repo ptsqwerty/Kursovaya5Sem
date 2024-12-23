@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="navbar">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}">Управление мероприятиями</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Ссылки навигации -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/blog}">блог</a>
+                    </li>
+                    <!-- Ссылка на административную панель блога для ADMIN и EDITOR -->
+                    <li class="nav-item" th:if="${(userRole == 'ADMIN' or userRole == 'EDITOR') and isLoggedIn}">
+                        <a class="nav-link" th:href="@{/blog/admin}">Админ панель блога</a>
+                    </li>
+                    <!-- Ссылка на управление пользователями для ADMIN -->
+                    <li class="nav-item" th:if="${userRole == 'ADMIN' and isLoggedIn}">
+                        <a class="nav-link" th:href="@{/admin/users}">Управление пользователями</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">Об авторе</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <!-- Если пользователь авторизован -->
+                    <li class="nav-item" th:if="${currentUser != null and isLoggedIn}">
+                        <span class="navbar-text" th:text="'Привет, ' + ${currentUser.username}"></span>
+                    </li>
+                    <li class="nav-item" th:if="${currentUser != null and isLoggedIn}">
+                        <a class="nav-link" th:href="@{/logout}">Выход</a>
+                    </li>
+                    <!-- Если пользователь не авторизован -->
+                    <li class="nav-item" th:if="${currentUser == null or not isLoggedIn}">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Вход</a>
+                    </li>
+                    <li class="nav-item" th:if="${currentUser == null or not isLoggedIn}">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Регистрация</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Модальное окно входа -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="loginForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginModalLabel">Вход</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="loginUsername" class="form-label">Имя пользователя:</label>
+                            <input type="text" name="username" class="form-control" id="loginUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Пароль:</label>
+                            <input type="password" name="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <div id="loginError" class="text-danger" style="display: none;">
+                            Неверное имя пользователя или пароль.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="registerForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registerModalLabel">Регистрация</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="registerUsername" class="form-label">Имя пользователя:</label>
+                            <input type="text" name="username" class="form-control" id="registerUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Пароль:</label>
+                            <input type="password" name="password" class="form-control" id="registerPassword" required>
+                        </div>
+                        <div id="registerError" class="text-danger" style="display: none;">
+                            Ошибка при регистрации. Попробуйте снова.
+                        </div>
+                        <div id="registerSuccess" class="text-success" style="display: none;">
+                            Регистрация прошла успешно! Войдите в систему.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-success">Зарегистрироваться</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно об авторе -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">Об авторе</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Этот проект был создан для управления мероприятиями и блогами. Автор: Иван Иванов, опытный разработчик и энтузиаст технологий.</p>
+                    <p>Вы можете связаться с автором по электронной почте: <a href="mailto:ivan.ivanov@example.com">ivan.ivanov@example.com</a>.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

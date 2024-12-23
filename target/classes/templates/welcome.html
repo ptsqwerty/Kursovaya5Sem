@@ -1,0 +1,33 @@
+<!-- welcome.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Добро пожаловать</title>
+    <!-- Подключаем Bootstrap CSS -->
+    <link rel="stylesheet" th:href="@{https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css}">
+    <!-- Ваши стили -->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+</head>
+<body th:data-role="${userRole}">
+
+<!-- Подключаем общее навигационное меню -->
+<div th:replace="~{navbar :: navbar}"></div>
+
+<div class="container mt-5 text-center">
+    <h1 class="mb-4">Добро пожаловать в систему управления грузами</h1>
+    <p class="lead">Пожалуйста, войдите в систему или зарегистрируйтесь для продолжения.</p>
+    <p>
+        <a href="#" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Войти</a>
+        <a href="#" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">Зарегистрироваться</a>
+    </p>
+</div>
+
+<!-- Модальные окна входа и регистрации перенесены в navbar.html -->
+
+<!-- Подключаем Bootstrap JS и ваши скрипты -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/blog_admin.js"></script>
+<script src="/js/scripts.js"></script>
+</body>
+</html>
